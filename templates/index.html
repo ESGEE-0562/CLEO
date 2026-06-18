@@ -226,6 +226,32 @@
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+    /* ── Archive modal ── */
+    #archive-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; }
+    #archive-modal.open { display: flex; }
+    #archive-box { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; width: 600px; max-height: 80vh; display: flex; flex-direction: column; overflow: hidden; }
+    #archive-box-header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    #archive-box-header h3 { font-size: 14px; font-weight: 600; }
+    #archive-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; line-height: 1; padding: 2px 4px; transition: color 0.15s; }
+    #archive-close:hover { color: var(--text); }
+    #sessions-list { flex: 1; overflow-y: auto; padding: 10px 0; }
+    .session-entry { border-bottom: 1px solid var(--border); }
+    .session-entry:last-child { border-bottom: none; }
+    .session-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 20px; cursor: pointer; transition: background 0.15s; gap: 12px; }
+    .session-row:hover { background: var(--surface2); }
+    .session-title { font-size: 13px; color: var(--text); font-weight: 500; }
+    .session-meta { font-size: 11px; font-family: var(--mono); color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
+    .session-messages { padding: 0 20px 16px; display: none; }
+    .session-messages.open { display: block; }
+    .session-messages .message { margin-bottom: 14px; }
+    .session-messages .message:last-child { margin-bottom: 0; }
+
+    /* ── Save-session toast ── */
+    @keyframes toastIn { 0%{opacity:0;transform:translateY(8px)} 100%{opacity:1;transform:translateY(0)} }
+    @keyframes toastOut { 0%{opacity:1} 100%{opacity:0} }
+    .save-toast { position: fixed; bottom: 28px; right: 28px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 16px; font-size: 12px; font-family: var(--mono); color: var(--green); z-index: 300; animation: toastIn 0.25s ease; }
+    .save-toast.out { animation: toastOut 0.3s ease forwards; }
   </style>
 </head>
 <body>
@@ -255,6 +281,8 @@
   </div>
 
   <div id="sidebar-footer">
+    <button class="btn-secondary" onclick="saveSession()">Save this session</button>
+    <button id="sessions-btn" class="btn-secondary" onclick="openArchiveModal()">Saved sessions</button>
     <button class="btn-secondary" onclick="openNoteModal()">Save session note</button>
     <button class="btn-secondary" onclick="newSession()">New session</button>
     <a href="/logout" class="btn-secondary">Log out</a>
@@ -335,6 +363,17 @@
     </div>
 
     <button id="ob-start" disabled onclick="startSession()">Let's go</button>
+  </div>
+</div>
+
+<!-- Archive modal -->
+<div id="archive-modal">
+  <div id="archive-box">
+    <div id="archive-box-header">
+      <h3>Saved sessions</h3>
+      <button id="archive-close" onclick="closeArchiveModal()" title="Close">&#x2715;</button>
+    </div>
+    <div id="sessions-list"></div>
   </div>
 </div>
 
@@ -678,6 +717,116 @@
     closeNoteModal();
   }
   document.getElementById("note-modal").addEventListener("click", e => { if (e.target === document.getElementById("note-modal")) closeNoteModal(); });
+  document.getElementById("archive-modal").addEventListener("click", e => { if (e.target === document.getElementById("archive-modal")) closeArchiveModal(); });
+
+  // ── Archive modal ──
+  function openArchiveModal() {
+    document.getElementById("archive-modal").classList.add("open");
+    fetchArchivedSessions();
+  }
+
+  function closeArchiveModal() {
+    document.getElementById("archive-modal").classList.remove("open");
+  }
+
+  async function fetchArchivedSessions() {
+    const list = document.getElementById("sessions-list");
+    list.innerHTML = '<div style="padding:20px;font-size:12px;color:var(--text-muted);font-family:var(--mono)">Loading...</div>';
+    try {
+      const res = await fetch("/archived-sessions");
+      const sessions = await res.json();
+      if (!sessions.length) {
+        list.innerHTML = '<div style="padding:20px;font-size:12px;color:var(--text-muted);font-family:var(--mono)">No saved sessions yet.</div>';
+        return;
+      }
+      list.innerHTML = "";
+      sessions.forEach(s => {
+        const entry = document.createElement("div");
+        entry.className = "session-entry";
+        const displayTitle = s.label || s.date;
+        entry.innerHTML = `
+          <div class="session-row" onclick="toggleArchivedSession(this, '${s.filename}')">
+            <span class="session-title">${displayTitle}</span>
+            <span class="session-meta">${s.message_count} msgs &middot; ${s.date}</span>
+          </div>
+          <div class="session-messages"></div>
+        `;
+        list.appendChild(entry);
+      });
+    } catch {
+      list.innerHTML = '<div style="padding:20px;font-size:12px;color:var(--text-muted);font-family:var(--mono)">Could not load sessions.</div>';
+    }
+  }
+
+  async function toggleArchivedSession(rowEl, filename) {
+    const msgEl = rowEl.nextElementSibling;
+    if (msgEl.classList.contains("open")) {
+      msgEl.classList.remove("open");
+      return;
+    }
+    if (msgEl.innerHTML.trim()) {
+      msgEl.classList.add("open");
+      return;
+    }
+    msgEl.innerHTML = '<div style="padding:10px 0;font-size:12px;color:var(--text-muted);font-family:var(--mono)">Loading...</div>';
+    msgEl.classList.add("open");
+    await loadArchivedSession(filename, msgEl);
+  }
+
+  async function loadArchivedSession(filename, container) {
+    try {
+      const res = await fetch(`/archived-sessions/${filename}`);
+      const data = await res.json();
+      const msgs = data.messages || [];
+      if (!msgs.length) { container.innerHTML = '<div style="padding:10px 0;font-size:12px;color:var(--text-muted)">No messages.</div>'; return; }
+      container.innerHTML = "";
+      msgs.forEach(msg => {
+        const role = msg.role === "user" ? "user" : "tutor";
+        const wrap = document.createElement("div");
+        wrap.className = `message ${role}`;
+        const lbl = document.createElement("div");
+        lbl.className = "msg-label";
+        lbl.textContent = role === "user" ? "you" : "tutor";
+        const bubble = document.createElement("div");
+        bubble.className = "msg-bubble";
+        const content = typeof msg.content === "string" ? msg.content : "[image message]";
+        bubble.innerHTML = renderMarkdown(content);
+        wrap.appendChild(lbl);
+        wrap.appendChild(bubble);
+        container.appendChild(wrap);
+      });
+      if (window.MathJax) MathJax.typesetPromise([container]).catch(() => {});
+    } catch {
+      container.innerHTML = '<div style="padding:10px 0;font-size:12px;color:var(--text-muted)">Could not load session.</div>';
+    }
+  }
+
+  // ── Save session ──
+  async function saveSession() {
+    if (messages.length === 0) { alert("Nothing to save — start a conversation first."); return; }
+    const label = prompt("Add a label for this session (optional):", "") ?? null;
+    if (label === null) return; // cancelled
+    try {
+      const res = await fetch("/archive-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ label: label.trim() }),
+      });
+      const data = await res.json();
+      if (data.ok) showSaveToast("Session saved.");
+    } catch { showSaveToast("Could not save session."); }
+  }
+
+  function showSaveToast(msg) {
+    const t = document.createElement("div");
+    t.className = "save-toast";
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => {
+      t.classList.add("out");
+      setTimeout(() => t.remove(), 350);
+    }, 2400);
+  }
 </script>
 </body>
 </html>

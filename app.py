@@ -16,6 +16,7 @@ PASSWORD = os.environ.get("TUTOR_PASSWORD", "Sassieq1")
 TUTOR_DIR = Path(__file__).parent / "cleo_tutor_retry_pack"
 PROGRESS_LOG = TUTOR_DIR / "progress-log.md"
 SESSION_FILE = Path(__file__).parent / "session.json"
+SESSIONS_DIR = Path(__file__).parent / "sessions"
 
 MD_FILES_ORDER = [
     "cleo-maths-tutor-system.md",
@@ -344,6 +345,66 @@ def clear_session():
         _chat_session["messages"] = []
     save_chat_session()
     return jsonify({"ok": True})
+
+
+@app.route("/archive-session", methods=["POST"])
+def archive_session():
+    if not authenticated():
+        return jsonify({"ok": False}), 401
+    SESSIONS_DIR.mkdir(exist_ok=True)
+    data = request.json or {}
+    label = data.get("label", "").strip()
+    filename = datetime.now().strftime("%Y-%m-%d-%H-%M") + ".json"
+    archive = {
+        "filename": filename,
+        "label": label,
+        "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "messages": _chat_session["messages"],
+        "mastery": _chat_session["mastery"],
+    }
+    with _lock:
+        (SESSIONS_DIR / filename).write_text(
+            json.dumps(archive, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+    return jsonify({"ok": True, "filename": filename})
+
+
+@app.route("/archived-sessions")
+def list_archived_sessions():
+    if not authenticated():
+        return jsonify({"error": "Unauthorised"}), 401
+    SESSIONS_DIR.mkdir(exist_ok=True)
+    results = []
+    for f in sorted(SESSIONS_DIR.glob("*.json"), reverse=True):
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+            results.append({
+                "filename": f.name,
+                "label": data.get("label", ""),
+                "date": data.get("date", ""),
+                "message_count": len(data.get("messages", [])),
+            })
+        except Exception:
+            pass
+    return jsonify(results)
+
+
+@app.route("/archived-sessions/<filename>")
+def get_archived_session(filename):
+    if not authenticated():
+        return jsonify({"error": "Unauthorised"}), 401
+    import re
+    safe = re.sub(r"[^A-Za-z0-9\-.]", "", filename)
+    if not safe.endswith(".json"):
+        return jsonify({"error": "Invalid filename"}), 400
+    path = SESSIONS_DIR / safe
+    if not path.exists():
+        return jsonify({"error": "Not found"}), 404
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return jsonify({"error": "Could not read file"}), 500
+    return jsonify(data)
 
 
 @app.route("/save-note", methods=["POST"])
