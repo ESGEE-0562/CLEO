@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cleo — Maths Tutor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #181b24;
+      --border: #2a2f42;
+      --accent: #5b7cf6;
+      --text: #e2e5f0;
+      --text-dim: #7a82a0;
+      --text-muted: #4a5170;
+      --radius: 12px;
+      --font: 'DM Sans', sans-serif;
+      --mono: 'DM Mono', monospace;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-box {
+      width: 360px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .login-header h1 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .login-header p {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: var(--mono);
+      margin-bottom: 8px;
+      letter-spacing: 0.04em;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 11px 14px;
+      background: #0f1117;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .field input:focus { border-color: #3b4d9e; }
+
+    .error-msg {
+      font-size: 12px;
+      color: #e05c6a;
+      font-family: var(--mono);
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      padding: 12px;
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-family: var(--font);
+      font-weight: 500;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    button[type="submit"]:hover { background: #4a6ae0; }
+  </style>
+</head>
+<body>
+  <form class="login-box" method="POST" action="/login">
+    <div class="login-header">
+      <h1>Cleo — Maths Tutor</h1>
+      <p>NSW Year 10 Advanced</p>
+    </div>
+    <div class="field">
+      <label>PASSWORD</label>
+      <input type="password" name="password" placeholder="Enter password" autofocus />
+    </div>
+    {% if error %}
+    <div class="error-msg">Wrong password. Try again.</div>
+    {% endif %}
+    <button type="submit">Enter</button>
+  </form>
+</body>
+</html>

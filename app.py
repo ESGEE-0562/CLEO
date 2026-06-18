@@ -2,10 +2,16 @@ import os
 import json
 from pathlib import Path
 from datetime import datetime
-from flask import Flask, request, jsonify, render_template, Response, stream_with_context
+from flask import (
+    Flask, request, jsonify, render_template,
+    Response, stream_with_context, session, redirect, url_for
+)
 import anthropic
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("FLASK_SECRET", "cleo-tutor-secret-2024")
+
+PASSWORD = os.environ.get("TUTOR_PASSWORD", "Sassieq1")
 
 TUTOR_DIR = Path(__file__).parent / "cleo_tutor_retry_pack"
 PROGRESS_LOG = TUTOR_DIR / "progress-log.md"
@@ -59,18 +65,46 @@ SYSTEM_PROMPT = load_system_prompt()
 client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
 
+def authenticated():
+    return session.get("authenticated") is True
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    error = False
+    if request.method == "POST":
+        if request.form.get("password") == PASSWORD:
+            session["authenticated"] = True
+            return redirect(url_for("index"))
+        error = True
+    return render_template("login.html", error=error)
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
+
 @app.route("/")
 def index():
+    if not authenticated():
+        return redirect(url_for("login"))
     return render_template("index.html", topics=TOPICS)
 
 
 @app.route("/topics")
 def topics():
+    if not authenticated():
+        return jsonify({"error": "Unauthorised"}), 401
     return jsonify(TOPICS)
 
 
 @app.route("/chat", methods=["POST"])
 def chat():
+    if not authenticated():
+        return jsonify({"error": "Unauthorised"}), 401
+
     data = request.json
     messages = data.get("messages", [])
     topic_context = data.get("topic_context", "")
@@ -102,6 +136,8 @@ def chat():
 
 @app.route("/save-note", methods=["POST"])
 def save_note():
+    if not authenticated():
+        return jsonify({"ok": False}), 401
     data = request.json
     note = data.get("note", "").strip()
     if not note:

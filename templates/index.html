@@ -423,6 +423,89 @@
 
     .btn-primary:hover { background: #4a6ae0; }
 
+    /* ── Onboarding modal ── */
+    #onboarding {
+      display: flex;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    #onboarding.hidden { display: none; }
+
+    #onboarding-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px 40px;
+      width: 520px;
+      max-width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    #onboarding-box h2 { font-size: 22px; font-weight: 600; }
+
+    #onboarding-box .subtitle {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.65;
+      margin-top: -16px;
+    }
+
+    .ob-label {
+      font-size: 11px;
+      font-family: var(--mono);
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .ob-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      padding: 7px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-family: var(--font);
+      font-size: 13px;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+      user-select: none;
+    }
+
+    .chip:hover { border-color: #3b4d9e; color: var(--text); }
+    .chip.selected { background: rgba(91,124,246,0.15); border-color: var(--accent); color: var(--accent); }
+
+    #ob-start {
+      padding: 12px;
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-family: var(--font);
+      font-weight: 500;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-top: 4px;
+    }
+
+    #ob-start:hover { background: #4a6ae0; }
+    #ob-start:disabled { opacity: 0.4; cursor: default; }
+
     /* Scrollbar */
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -453,6 +536,7 @@
   <div id="sidebar-footer">
     <button class="btn-secondary" onclick="openNoteModal()">Save session note</button>
     <button class="btn-secondary" onclick="clearChat()">New session</button>
+    <a href="/logout" class="btn-secondary" style="text-align:center;text-decoration:none;display:block;">Log out</a>
   </div>
 </aside>
 
@@ -479,6 +563,44 @@
   </div>
 </div>
 
+<!-- Onboarding modal -->
+<div id="onboarding">
+  <div id="onboarding-box">
+    <h2>Hey Cleo.</h2>
+    <p class="subtitle">
+      This is your personal maths tutor for Monday's test. It knows everything on the exam — Chapter 4 (Measurement) and Chapter 6 (Trigonometry) — and it has real questions from NSW school papers to practise with. It won't just give you answers. It'll work through things with you the way an actual tutor would: asking questions, catching where you go wrong, and building up from there.
+    </p>
+
+    <div>
+      <div class="ob-label">Which topics feel shakiest right now?</div>
+      <div class="ob-chips" id="topic-chips">
+        <span class="chip" data-val="surface area and volume">Surface area & volume</span>
+        <span class="chip" data-val="Pythagoras in 2D and 3D">Pythagoras</span>
+        <span class="chip" data-val="area of shapes and sectors">Area</span>
+        <span class="chip" data-val="SOHCAHTOA and finding unknown angles">SOHCAHTOA / inverse trig</span>
+        <span class="chip" data-val="the sine rule">Sine rule</span>
+        <span class="chip" data-val="the cosine rule">Cosine rule</span>
+        <span class="chip" data-val="bearings and directions">Bearings</span>
+        <span class="chip" data-val="angles of elevation and depression">Elevation & depression</span>
+        <span class="chip" data-val="all of it — I want a full run-through">All of it</span>
+        <span class="chip" data-val="I'm not sure yet — help me figure out where to start">Not sure yet</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="ob-label">How do you want to work today?</div>
+      <div class="ob-chips" id="mode-chips">
+        <span class="chip" data-val="explain the concepts first, then test me">Talk me through it first</span>
+        <span class="chip" data-val="give me practice problems straight away">Practice problems</span>
+        <span class="chip" data-val="run me through an exam-style question with full working">Exam-style question</span>
+        <span class="chip" data-val="quiz me quickly on the key facts and formulas">Quick formula check</span>
+      </div>
+    </div>
+
+    <button id="ob-start" disabled onclick="startSession()">Let's go</button>
+  </div>
+</div>
+
 <!-- Note modal -->
 <div id="note-modal">
   <div id="note-box">
@@ -502,6 +624,38 @@
   const sendBtn = document.getElementById("send-btn");
   const topicLabel = document.getElementById("topic-label");
   const welcome = document.getElementById("welcome");
+
+  // ── Onboarding ──
+  let obTopics = [];
+  let obMode = "";
+
+  document.querySelectorAll("#topic-chips .chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      chip.classList.toggle("selected");
+      obTopics = [...document.querySelectorAll("#topic-chips .chip.selected")].map(c => c.dataset.val);
+      checkObReady();
+    });
+  });
+
+  document.querySelectorAll("#mode-chips .chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll("#mode-chips .chip").forEach(c => c.classList.remove("selected"));
+      chip.classList.add("selected");
+      obMode = chip.dataset.val;
+      checkObReady();
+    });
+  });
+
+  function checkObReady() {
+    document.getElementById("ob-start").disabled = !(obTopics.length > 0 && obMode);
+  }
+
+  function startSession() {
+    document.getElementById("onboarding").classList.add("hidden");
+    const topicStr = obTopics.length === 1 ? obTopics[0] : obTopics.slice(0, -1).join(", ") + " and " + obTopics.slice(-1);
+    const firstMessage = `Hi. My exam is on Monday — it covers Chapter 4 (Measurement) and Chapter 6 (Trigonometry). The topics I'm least confident on are: ${topicStr}. I want to ${obMode}.`;
+    sendMessageText(firstMessage);
+  }
 
   // Auto-resize textarea
   input.addEventListener("input", () => {
@@ -598,7 +752,10 @@
   }
 
   async function sendMessage() {
-    const text = input.value.trim();
+    await sendMessageText(input.value.trim());
+  }
+
+  async function sendMessageText(text) {
     if (!text || isStreaming) return;
 
     isStreaming = true;
