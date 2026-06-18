@@ -35,113 +35,90 @@
     }
 
     html, body { height: 100%; }
-    body { font-family: var(--font); background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); display: flex; height: 100dvh; overflow: hidden; }
+
+    /* ── Sidebar overlay (mobile: slides in over content) ── */
+    #sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 49; }
+    #sidebar-overlay.open { display: block; }
 
     /* ── Sidebar ── */
-    #sidebar { width: 260px; min-width: 260px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+    #sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0; z-index: 50;
+      width: 280px; background: var(--surface); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; overflow: hidden;
+      transform: translateX(-100%); transition: transform 0.25s ease;
+    }
+    #sidebar.open { transform: translateX(0); }
 
-    #sidebar-header { padding: 20px 20px 14px; border-bottom: 1px solid var(--border); }
+    #sidebar-header { padding: 20px 20px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
     #sidebar-header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.02em; }
     #sidebar-header p { font-size: 11px; color: var(--text-muted); margin-top: 3px; font-family: var(--mono); }
+    #sidebar-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; line-height: 1; padding: 4px; flex-shrink: 0; }
 
-    #topic-nav { flex: 1; overflow-y: auto; padding: 10px 0 8px; }
+    #topic-nav { flex: 1; overflow-y: auto; padding: 10px 0 8px; -webkit-overflow-scrolling: touch; }
 
     .chapter-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); padding: 10px 20px 5px; }
 
-    .topic-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px 20px; background: none; border: none; cursor: pointer; text-align: left; color: var(--text-dim); font-family: var(--font); font-size: 13px; transition: background 0.15s, color 0.15s; }
-    .topic-btn:hover { background: var(--surface2); color: var(--text); }
+    .topic-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 20px; background: none; border: none; cursor: pointer; text-align: left; color: var(--text-dim); font-family: var(--font); font-size: 14px; transition: background 0.15s, color 0.15s; }
+    .topic-btn:hover, .topic-btn:active { background: var(--surface2); color: var(--text); }
     .topic-btn.active { background: rgba(91,124,246,0.12); color: var(--accent); }
     .topic-btn * { pointer-events: none; }
 
-    .topic-code { font-family: var(--mono); font-size: 11px; color: var(--text-muted); min-width: 24px; }
+    .topic-code { font-family: var(--mono); font-size: 11px; color: var(--text-muted); min-width: 26px; }
     .topic-btn.active .topic-code { color: var(--accent); opacity: 0.7; }
 
-    /* ── Progress bar — top header ── */
-    #progress-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex: 1;
-      max-width: 480px;
-      margin: 0 auto;
-    }
-
-    #progress-track {
-      flex: 1;
-      height: 7px;
-      background: var(--surface2);
-      border-radius: 10px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-    }
-
-    #progress-fill {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--accent-dim), var(--accent));
-      border-radius: 10px;
-      transition: width 1s ease;
-    }
-
-    #progress-fill.complete {
-      background: linear-gradient(90deg, #2ec870, var(--green));
-      box-shadow: 0 0 8px rgba(61,220,132,0.4);
-    }
-
-    #progress-pct {
-      font-size: 11px;
-      font-family: var(--mono);
-      color: var(--text-dim);
-      white-space: nowrap;
-      min-width: 32px;
-      text-align: right;
-    }
-
-    /* ── Progress in sidebar (what's left button only) ── */
-    #progress-section {
-      padding: 12px 20px;
-      border-top: 1px solid var(--border);
-    }
-
-    #whats-left-btn {
-      width: 100%;
-      padding: 7px 12px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text-dim);
-      font-family: var(--font);
-      font-size: 12px;
-      cursor: pointer;
-      transition: border-color 0.15s, color 0.15s;
-      text-align: left;
-    }
-
+    /* ── Progress in sidebar ── */
+    #progress-section { padding: 12px 20px; border-top: 1px solid var(--border); }
+    #whats-left-btn { width: 100%; padding: 9px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text-dim); font-family: var(--font); font-size: 13px; cursor: pointer; transition: border-color 0.15s, color 0.15s; text-align: left; }
     #whats-left-btn:hover { border-color: var(--accent-dim); color: var(--text); }
 
     /* ── Sidebar footer ── */
-    #sidebar-footer { padding: 12px 20px 16px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 7px; }
-    .btn-secondary { width: 100%; padding: 8px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text-dim); font-family: var(--font); font-size: 12px; cursor: pointer; transition: border-color 0.15s, color 0.15s; text-align: center; text-decoration: none; display: block; }
-    .btn-secondary:hover { border-color: var(--accent-dim); color: var(--text); }
+    #sidebar-footer { padding: 12px 20px 20px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+    .btn-secondary { width: 100%; padding: 10px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text-dim); font-family: var(--font); font-size: 13px; cursor: pointer; transition: border-color 0.15s, color 0.15s; text-align: center; text-decoration: none; display: block; }
+    .btn-secondary:hover, .btn-secondary:active { border-color: var(--accent-dim); color: var(--text); }
+
+    /* ── Desktop: sidebar always visible ── */
+    @media (min-width: 700px) {
+      #sidebar { position: static; transform: none; width: 260px; min-width: 260px; }
+      #sidebar-close { display: none; }
+      #sidebar-overlay { display: none !important; }
+    }
 
     /* ── Main ── */
-    #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
 
-    #chat-header { padding: 14px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface); gap: 12px; }
-    #current-topic { font-size: 13px; color: var(--text-muted); flex: 1; }
-    #current-topic span { color: var(--text-dim); font-weight: 500; }
-    #current-topic span.active { color: var(--accent); }
+    /* ── Header ── */
+    #chat-header { padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; background: var(--surface); gap: 10px; flex-shrink: 0; }
+
+    #hamburger { background: none; border: none; cursor: pointer; color: var(--text-dim); padding: 6px; display: flex; align-items: center; flex-shrink: 0; }
+    #hamburger:active { color: var(--text); }
+    @media (min-width: 700px) { #hamburger { display: none; } }
+
+    #progress-header { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+    #progress-track { flex: 1; height: 7px; background: var(--surface2); border-radius: 10px; overflow: hidden; border: 1px solid var(--border); min-width: 0; }
+    #progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-dim), var(--accent)); border-radius: 10px; transition: width 1s ease; }
+    #progress-fill.complete { background: linear-gradient(90deg, #2ec870, var(--green)); box-shadow: 0 0 8px rgba(61,220,132,0.4); }
+    #progress-pct { font-size: 11px; font-family: var(--mono); color: var(--text-dim); white-space: nowrap; }
+
+    /* ── Countdown ── */
+    #countdown-wrap { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; gap: 1px; }
+    #countdown-label { font-size: 8px; font-family: var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+    #countdown { font-size: 13px; font-family: var(--mono); font-weight: 500; color: var(--text); white-space: nowrap; }
+    #countdown.urgent { color: #e05c6a; }
     #status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
 
-    #messages { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 20px; scroll-behavior: smooth; }
+    /* ── Messages ── */
+    #messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+    @media (min-width: 700px) { #messages { padding: 24px; gap: 20px; } }
 
-    .message { display: flex; flex-direction: column; max-width: 760px; }
+    .message { display: flex; flex-direction: column; max-width: min(86vw, 760px); }
     .message.user { align-self: flex-end; align-items: flex-end; }
     .message.tutor { align-self: flex-start; align-items: flex-start; }
 
-    .msg-label { font-size: 10px; font-family: var(--mono); letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 5px; }
+    .msg-label { font-size: 10px; font-family: var(--mono); letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 4px; }
 
-    .msg-bubble { padding: 12px 16px; border-radius: var(--radius); font-size: 14px; line-height: 1.65; }
+    .msg-bubble { padding: 11px 14px; border-radius: var(--radius); font-size: 15px; line-height: 1.65; }
+    @media (min-width: 700px) { .msg-bubble { font-size: 14px; padding: 12px 16px; } }
     .message.user .msg-bubble { background: var(--user-bg); border: 1px solid rgba(91,124,246,0.2); border-bottom-right-radius: 4px; }
     .message.tutor .msg-bubble { background: var(--tutor-bg); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
 
@@ -149,7 +126,7 @@
     .msg-bubble p:last-child { margin-bottom: 0; }
     .msg-bubble strong { color: var(--text); font-weight: 600; }
     .msg-bubble code { font-family: var(--mono); font-size: 12.5px; background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
-    .msg-bubble pre { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin: 10px 0; overflow-x: auto; font-family: var(--mono); font-size: 12.5px; }
+    .msg-bubble pre { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin: 10px 0; overflow-x: auto; font-family: var(--mono); font-size: 12px; }
     .msg-bubble ul, .msg-bubble ol { padding-left: 18px; margin: 8px 0; }
     .msg-bubble li { margin-bottom: 4px; }
 
@@ -164,85 +141,91 @@
     @keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-5px)} }
 
     /* ── Input ── */
-    #input-area { padding: 14px 24px 18px; border-top: 1px solid var(--border); background: var(--surface); }
-    #input-row { display: flex; gap: 10px; align-items: flex-end; }
-    #msg-input { flex: 1; min-height: 44px; max-height: 160px; padding: 11px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: var(--font); font-size: 14px; resize: none; outline: none; transition: border-color 0.15s; line-height: 1.5; }
+    #input-area { padding: 10px 12px 14px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
+    @media (min-width: 700px) { #input-area { padding: 14px 24px 18px; } }
+    #input-row { display: flex; gap: 8px; align-items: flex-end; }
+    #msg-input { flex: 1; min-height: 44px; max-height: 120px; padding: 11px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: var(--font); font-size: 16px; resize: none; outline: none; transition: border-color 0.15s; line-height: 1.5; -webkit-appearance: none; }
+    @media (min-width: 700px) { #msg-input { font-size: 14px; max-height: 160px; } }
     #msg-input:focus { border-color: var(--accent-dim); }
     #msg-input::placeholder { color: var(--text-muted); }
-    #send-btn { padding: 11px 18px; background: var(--accent); border: none; border-radius: 10px; color: #fff; font-family: var(--font); font-weight: 500; font-size: 13px; cursor: pointer; transition: background 0.15s, opacity 0.15s; white-space: nowrap; }
-    #send-btn:hover { background: #4a6ae0; }
+    #send-btn { padding: 11px 16px; background: var(--accent); border: none; border-radius: 10px; color: #fff; font-family: var(--font); font-weight: 500; font-size: 14px; cursor: pointer; transition: background 0.15s, opacity 0.15s; white-space: nowrap; flex-shrink: 0; }
+    #send-btn:active { background: #4a6ae0; }
     #send-btn:disabled { opacity: 0.4; cursor: default; }
-    #input-hint { margin-top: 7px; font-size: 11px; color: var(--text-muted); font-family: var(--mono); }
+    #input-hint { margin-top: 6px; font-size: 11px; color: var(--text-muted); font-family: var(--mono); display: none; }
+    @media (min-width: 700px) { #input-hint { display: block; } }
 
     /* ── Welcome ── */
-    #welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 12px; color: var(--text-muted); font-size: 13px; text-align: center; padding: 40px; }
+    #welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 12px; color: var(--text-muted); font-size: 13px; text-align: center; padding: 32px 20px; }
     #welcome h2 { font-size: 18px; font-weight: 500; color: var(--text-dim); margin-bottom: 4px; }
-    #welcome p { max-width: 380px; line-height: 1.6; }
+    #welcome p { max-width: 340px; line-height: 1.6; }
+
+    /* ── Modals (shared) ── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: flex-end; justify-content: center; padding: 0; }
+    .modal-overlay.open { display: flex; }
+    @media (min-width: 700px) { .modal-overlay { align-items: center; padding: 20px; } }
 
     /* ── Note modal ── */
-    #note-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; }
-    #note-modal.open { display: flex; }
-    #note-box { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; width: 440px; display: flex; flex-direction: column; gap: 12px; }
+    #note-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px 16px 0 0; padding: 24px 20px 32px; width: 100%; display: flex; flex-direction: column; gap: 12px; }
+    @media (min-width: 700px) { #note-box { border-radius: 14px; width: 440px; padding: 24px; } }
     #note-box h3 { font-size: 14px; font-weight: 600; }
     #note-box p { font-size: 12px; color: var(--text-dim); }
-    #note-text { width: 100%; height: 100px; padding: 10px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--font); font-size: 13px; resize: none; outline: none; }
+    #note-text { width: 100%; height: 100px; padding: 10px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--font); font-size: 16px; resize: none; outline: none; -webkit-appearance: none; }
+    @media (min-width: 700px) { #note-text { font-size: 13px; } }
     #note-text:focus { border-color: var(--accent-dim); }
     #note-actions { display: flex; gap: 8px; justify-content: flex-end; }
-    .btn-primary { padding: 8px 16px; background: var(--accent); border: none; border-radius: 8px; color: #fff; font-family: var(--font); font-size: 13px; font-weight: 500; cursor: pointer; }
-    .btn-primary:hover { background: #4a6ae0; }
+    .btn-primary { padding: 10px 18px; background: var(--accent); border: none; border-radius: 8px; color: #fff; font-family: var(--font); font-size: 14px; font-weight: 500; cursor: pointer; }
+    .btn-primary:active { background: #4a6ae0; }
 
     /* ── Onboarding modal ── */
-    #onboarding { display: flex; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+    #onboarding { display: flex; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; align-items: flex-end; justify-content: center; }
     #onboarding.hidden { display: none; }
-    #onboarding-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 36px 40px; width: 540px; max-width: 100%; display: flex; flex-direction: column; gap: 22px; max-height: 90vh; overflow-y: auto; }
+    #onboarding-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px 20px 0 0; padding: 28px 20px 36px; width: 100%; display: flex; flex-direction: column; gap: 20px; max-height: 92dvh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    @media (min-width: 700px) {
+      #onboarding { align-items: center; }
+      #onboarding-box { border-radius: 16px; padding: 36px 40px; width: 540px; max-height: 90vh; }
+    }
     #onboarding-box h2 { font-size: 22px; font-weight: 600; }
-    #onboarding-box .subtitle { font-size: 13px; color: var(--text-dim); line-height: 1.65; margin-top: -14px; }
+    #onboarding-box .subtitle { font-size: 14px; color: var(--text-dim); line-height: 1.65; margin-top: -12px; }
     .ob-label { font-size: 11px; font-family: var(--mono); letter-spacing: 0.08em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; }
     .ob-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-    .chip { padding: 7px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; font-family: var(--font); font-size: 13px; color: var(--text-dim); cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s; user-select: none; }
-    .chip:hover { border-color: #3b4d9e; color: var(--text); }
+    .chip { padding: 8px 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; font-family: var(--font); font-size: 14px; color: var(--text-dim); cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s; user-select: none; }
+    .chip:active { border-color: #3b4d9e; color: var(--text); }
     .chip.selected { background: rgba(91,124,246,0.15); border-color: var(--accent); color: var(--accent); }
-    #ob-start { padding: 12px; background: var(--accent); border: none; border-radius: 10px; color: #fff; font-family: var(--font); font-weight: 500; font-size: 14px; cursor: pointer; transition: background 0.15s; margin-top: 4px; }
-    #ob-start:hover { background: #4a6ae0; }
+    #ob-start { padding: 14px; background: var(--accent); border: none; border-radius: 10px; color: #fff; font-family: var(--font); font-weight: 500; font-size: 15px; cursor: pointer; transition: background 0.15s; margin-top: 4px; }
+    #ob-start:active { background: #4a6ae0; }
     #ob-start:disabled { opacity: 0.4; cursor: default; }
-
-    /* ── Countdown ── */
-    #countdown-wrap { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; gap: 2px; }
-    #countdown-label { font-size: 9px; font-family: var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
-    #countdown { font-size: 15px; font-family: var(--mono); font-weight: 500; color: var(--text); white-space: nowrap; letter-spacing: 0.03em; }
-    #countdown.urgent { color: #e05c6a; }
 
     /* ── Image upload ── */
     #attach-btn { padding: 11px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; color: var(--text-dim); cursor: pointer; transition: border-color 0.15s, color 0.15s; display: flex; align-items: center; flex-shrink: 0; }
-    #attach-btn:hover { border-color: var(--accent-dim); color: var(--text); }
+    #attach-btn:active { border-color: var(--accent-dim); color: var(--text); }
     #img-preview-wrap { display: none; margin-bottom: 10px; position: relative; width: fit-content; }
     #img-preview-wrap.visible { display: block; }
-    #img-preview { max-height: 120px; max-width: 220px; border-radius: 8px; border: 1px solid var(--border); display: block; }
-    #img-clear { position: absolute; top: -7px; right: -7px; width: 20px; height: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--text-dim); transition: color 0.15s; }
-    #img-clear:hover { color: var(--text); }
+    #img-preview { max-height: 120px; max-width: 180px; border-radius: 8px; border: 1px solid var(--border); display: block; }
+    #img-clear { position: absolute; top: -7px; right: -7px; width: 22px; height: 22px; background: var(--surface); border: 1px solid var(--border); border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--text-dim); }
     .msg-bubble img { max-width: 100%; max-height: 260px; border-radius: 8px; margin-bottom: 8px; display: block; }
 
     /* Scrollbar */
-    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
     /* ── Archive modal ── */
-    #archive-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; }
+    #archive-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: flex-end; justify-content: center; }
     #archive-modal.open { display: flex; }
-    #archive-box { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; width: 600px; max-height: 80vh; display: flex; flex-direction: column; overflow: hidden; }
-    #archive-box-header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    @media (min-width: 700px) { #archive-modal { align-items: center; padding: 20px; } }
+    #archive-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px 16px 0 0; width: 100%; max-height: 85dvh; display: flex; flex-direction: column; overflow: hidden; }
+    @media (min-width: 700px) { #archive-box { border-radius: 14px; width: 600px; max-height: 80vh; } }
+    #archive-box-header { padding: 16px 20px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
     #archive-box-header h3 { font-size: 14px; font-weight: 600; }
-    #archive-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; line-height: 1; padding: 2px 4px; transition: color 0.15s; }
-    #archive-close:hover { color: var(--text); }
-    #sessions-list { flex: 1; overflow-y: auto; padding: 10px 0; }
+    #archive-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; line-height: 1; padding: 4px 6px; }
+    #sessions-list { flex: 1; overflow-y: auto; padding: 8px 0; -webkit-overflow-scrolling: touch; }
     .session-entry { border-bottom: 1px solid var(--border); }
     .session-entry:last-child { border-bottom: none; }
-    .session-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 20px; cursor: pointer; transition: background 0.15s; gap: 12px; }
-    .session-row:hover { background: var(--surface2); }
-    .session-title { font-size: 13px; color: var(--text); font-weight: 500; }
+    .session-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 20px; cursor: pointer; transition: background 0.15s; gap: 12px; }
+    .session-row:active { background: var(--surface2); }
+    .session-title { font-size: 14px; color: var(--text); font-weight: 500; }
     .session-meta { font-size: 11px; font-family: var(--mono); color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
-    .session-messages { padding: 0 20px 16px; display: none; }
+    .session-messages { padding: 0 16px 16px; display: none; }
     .session-messages.open { display: block; }
     .session-messages .message { margin-bottom: 14px; }
     .session-messages .message:last-child { margin-bottom: 0; }
@@ -250,17 +233,24 @@
     /* ── Save-session toast ── */
     @keyframes toastIn { 0%{opacity:0;transform:translateY(8px)} 100%{opacity:1;transform:translateY(0)} }
     @keyframes toastOut { 0%{opacity:1} 100%{opacity:0} }
-    .save-toast { position: fixed; bottom: 28px; right: 28px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 16px; font-size: 12px; font-family: var(--mono); color: var(--green); z-index: 300; animation: toastIn 0.25s ease; }
+    .save-toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 18px; font-size: 12px; font-family: var(--mono); color: var(--green); z-index: 300; animation: toastIn 0.25s ease; white-space: nowrap; }
+    @media (min-width: 700px) { .save-toast { left: auto; right: 28px; bottom: 28px; transform: none; } }
     .save-toast.out { animation: toastOut 0.3s ease forwards; }
   </style>
 </head>
 <body>
 
+<!-- Sidebar overlay (mobile tap-to-close) -->
+<div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
 <!-- Sidebar -->
 <aside id="sidebar">
   <div id="sidebar-header">
-    <h1>Cleo — Maths Tutor</h1>
-    <p>NSW Year 10 Advanced</p>
+    <div>
+      <h1>Cleo — Maths Tutor</h1>
+      <p>NSW Year 10 Advanced</p>
+    </div>
+    <button id="sidebar-close" onclick="closeSidebar()" aria-label="Close menu">&#x2715;</button>
   </div>
 
   <nav id="topic-nav">
@@ -292,7 +282,9 @@
 <!-- Main -->
 <div id="main">
   <div id="chat-header">
-    <div id="current-topic">Focus: <span id="topic-label">← sidebar</span></div>
+    <button id="hamburger" onclick="openSidebar()" aria-label="Open menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
     <div id="progress-header">
       <div id="progress-track"><div id="progress-fill"></div></div>
       <div id="progress-pct">0%</div>
@@ -378,7 +370,7 @@
 </div>
 
 <!-- Note modal -->
-<div id="note-modal">
+<div id="note-modal" class="modal-overlay">
   <div id="note-box">
     <h3>Session note</h3>
     <p>Jot anything worth remembering — what clicked, what didn't, topics to revisit.</p>
@@ -515,13 +507,22 @@
     sendMessageText(`Hi. My exam is Monday — it's Chapter 4 and Chapter 6. The topics I'm least confident on are: ${topicStr}. I want to ${obMode}.`);
   }
 
+  // ── Sidebar (mobile) ──
+  function openSidebar() {
+    document.getElementById("sidebar").classList.add("open");
+    document.getElementById("sidebar-overlay").classList.add("open");
+  }
+  function closeSidebar() {
+    document.getElementById("sidebar").classList.remove("open");
+    document.getElementById("sidebar-overlay").classList.remove("open");
+  }
+
   // ── Topic selection ──
   function selectTopic(btn) {
     document.querySelectorAll(".topic-btn").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     currentTopic = btn.dataset.topic;
-    topicLabel.textContent = currentTopic.split(": ")[1] || currentTopic;
-    topicLabel.classList.add("active");
+    closeSidebar();
   }
 
   // ── Messaging ──
@@ -692,6 +693,7 @@
 
   // ── What's left ──
   function askWhatsLeft() {
+    closeSidebar();
     sendMessageText("What do I still need to learn and demonstrate before Monday? Be specific — tell me exactly which concepts I haven't shown I can do yet, and what kinds of questions I should practise.");
   }
 
