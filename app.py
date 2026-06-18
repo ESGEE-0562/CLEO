@@ -304,7 +304,7 @@ def chat():
     def generate():
         with client.messages.stream(
             model=model,
-            max_tokens=1024,
+            max_tokens=2048,
             system=system,
             messages=messages,
         ) as stream:
