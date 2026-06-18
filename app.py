@@ -275,12 +275,36 @@ def chat():
             "Prioritise questions and explanations from this section unless the student asks otherwise."
         )
 
+    # Handle optional image attachment
+    image_data = data.get("image")  # {data: base64str, media_type: "image/jpeg"}
+    if image_data and messages:
+        # Replace the last user message content with a multipart block
+        last = messages[-1]
+        if last["role"] == "user":
+            text_content = last["content"] if last["content"] else "Here's my working — can you check it?"
+            messages = messages[:-1] + [{
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": image_data["media_type"],
+                            "data": image_data["data"],
+                        }
+                    },
+                    {"type": "text", "text": text_content},
+                ]
+            }]
+
+    # Use Sonnet for image messages (better handwriting recognition), Haiku for text
+    model = "claude-sonnet-4-6" if image_data else "claude-haiku-4-5-20251001"
     full_response = []
 
     def generate():
         with client.messages.stream(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=1024,
+            model=model,
+            max_tokens=2048,
             system=system,
             messages=messages,
         ) as stream:
