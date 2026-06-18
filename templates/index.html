@@ -165,12 +165,16 @@
 
     #current-topic {
       font-size: 13px;
-      color: var(--text-dim);
+      color: var(--text-muted);
     }
 
     #current-topic span {
-      color: var(--accent);
+      color: var(--text-dim);
       font-weight: 500;
+    }
+
+    #current-topic span.active {
+      color: var(--accent);
     }
 
     #status-dot {
@@ -455,7 +459,7 @@
 <!-- Main -->
 <div id="main">
   <div id="chat-header">
-    <div id="current-topic">Focus: <span id="topic-label">choose a topic →</span></div>
+    <div id="current-topic">Focus: <span id="topic-label">← pick one from the sidebar</span></div>
     <div id="status-dot" title="Connected"></div>
   </div>
 
@@ -517,6 +521,7 @@
     btn.classList.add("active");
     currentTopic = btn.dataset.topic;
     topicLabel.textContent = currentTopic.split(": ")[1] || currentTopic;
+    topicLabel.classList.add("active");
   }
 
   function appendMessage(role, content) {
