@@ -207,7 +207,9 @@
     #ob-start:disabled { opacity: 0.4; cursor: default; }
 
     /* ── Countdown ── */
-    #countdown { font-size: 11px; font-family: var(--mono); color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
+    #countdown-wrap { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; gap: 2px; }
+    #countdown-label { font-size: 9px; font-family: var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+    #countdown { font-size: 15px; font-family: var(--mono); font-weight: 500; color: var(--text); white-space: nowrap; letter-spacing: 0.03em; }
     #countdown.urgent { color: #e05c6a; }
 
     /* ── Image upload ── */
@@ -267,7 +269,10 @@
       <div id="progress-track"><div id="progress-fill"></div></div>
       <div id="progress-pct">0%</div>
     </div>
-    <div id="countdown" title="Time until exam"></div>
+    <div id="countdown-wrap">
+      <div id="countdown-label">Countdown to Maths Test</div>
+      <div id="countdown"></div>
+    </div>
     <div id="status-dot" title="Connected"></div>
   </div>
 
@@ -390,7 +395,7 @@
   initSession();
 
   // ── Countdown to exam ──
-  const EXAM_TIME = new Date("2026-06-22T07:00:00+10:00"); // Monday 22 Jun 7am AEST
+  const EXAM_TIME = new Date("2026-06-22T08:45:00+10:00"); // Monday 22 Jun 8:45am AEST
   function updateCountdown() {
     const el = document.getElementById("countdown");
     const now = new Date();
